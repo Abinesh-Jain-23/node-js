@@ -2,6 +2,7 @@ if (process.env.NODE_ENV !== 'production') require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const mysql = require('mysql2');
+const translate = require('translate-google')
 const { createServer } = require('node:http');
 const cors = require('cors');
 const { Server } = require('socket.io');
@@ -93,13 +94,23 @@ const pool = mysql.createPool({
     waitForConnections: true
 })
 
-pool.query('SELECT * FROM customers_categories', function (error, results, fields) {
-    if (error) {
-        console.error('Error fetching databases: ' + error.stack);
-        return;
+// pool.query('SELECT * FROM customers_categories', function (error, results, fields) {
+//     if (error) {
+//         console.error('Error fetching databases: ' + error.stack);
+//         return;
+//     }
+//     console.log(results);
+// });
+
+app.get('/translate', async (req, res) => {
+    const { text } = req.query;
+    try {
+        const TRANSLATED = await translate(text, { to: 'ta' });
+        res.json({ TRANSLATED });
+    } catch (error) {
+        res.status(500).json({ error });
     }
-    console.log(results);
-});
+})
 
 server.listen(PORT, () => console.log('Server Started at ' + PORT));
 
