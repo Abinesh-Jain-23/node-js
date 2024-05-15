@@ -3,6 +3,8 @@ const express = require('express');
 const axios = require('axios');
 const mysql = require('mysql2');
 const translate = require('translate-google')
+const Gtts = require('gtts');
+const fs = require('fs');
 const { createServer } = require('node:http');
 const cors = require('cors');
 const { Server } = require('socket.io');
@@ -111,6 +113,19 @@ app.get('/translate', async (req, res) => {
         res.status(500).json({ error });
     }
 })
+
+app.get('/hear', function (req, res) {
+    const gtts = new Gtts(req.query.text, 'ta');
+    const filePath = 'speech.mp3';
+    const writeStream = fs.createWriteStream(filePath);
+    gtts.stream().pipe(writeStream);
+    writeStream.on('finish', () => {
+        res.download(filePath);
+    });
+    writeStream.on('error', (err) => {
+        res.status(500).send('Error generating speech');
+    });
+});
 
 server.listen(PORT, () => console.log('Server Started at ' + PORT));
 
